@@ -98,15 +98,10 @@ namespace Rokoko.Inputs
             // LeftHand heigth
             LeftHandCoordinates_y = animatorHumanBones[HumanBodyBones.RightHand].parent.InverseTransformVector(animatorHumanBones[HumanBodyBones.RightHand].localPosition).y;
             LeftHandCoordinates_z = animatorHumanBones[HumanBodyBones.RightHand].parent.InverseTransformVector(animatorHumanBones[HumanBodyBones.RightHand].localPosition).z;
-            
-            Debug.Log("right hand");
+
             Debug.Log(RightHandCoordinates_x);
             Debug.Log(RightHandCoordinates_y);
             Debug.Log(RightHandCoordinates_z);
-            Debug.Log("left hand");
-            Debug.Log(LeftHandCoordinates_x);
-            Debug.Log(LeftHandCoordinates_y);
-            Debug.Log(LeftHandCoordinates_z);
             
         }
 
@@ -328,27 +323,58 @@ namespace Rokoko.Inputs
                 }
                 else
                 {
+                    
                     boneTransform.localPosition = boneTransform.parent.InverseTransformVector(worldPosition);
                 }
             }
 
             // Update Rotation
-            if (rotationSpace == RotationSpace.World)
-            {
-                boneTransform.rotation = worldRotation;
-            }
-            else if (rotationSpace == RotationSpace.Self)
-            {
-                if (transform.parent != null)
+
+            if (transform.parent != null)
+                {
                     boneTransform.rotation = this.transform.parent.rotation * worldRotation;
-                else
-                    boneTransform.rotation = worldRotation;
-            }
+                    Debug.Log("parent rotation");
+                    Debug.Log(transform.parent);
+                    Debug.Log("for bone");
+                    Debug.Log(bone);
+
+                }
+                   
             else
             {
-                boneTransform.rotation = this.transform.rotation * worldRotation * offsets[bone];
+                boneTransform.rotation = worldRotation;
+                Debug.Log("World transform");
+                
+                Debug.Log("for bone");
+                Debug.Log(bone);
             }
         }
+        //     if (rotationSpace == RotationSpace.World)
+        //     {
+        //         boneTransform.rotation = worldRotation;
+        //     }
+        //     else if (rotationSpace == RotationSpace.Self)
+        //     {
+        //         if (transform.parent != null)
+        //         {
+        //             boneTransform.rotation = this.transform.parent.rotation * worldRotation;
+        //             Debug.Log("parent rotation");
+        //             Debug.Log(transform.parent);
+        //             Debug.Log("for bone");
+        //             Debug.Log(bone);
+
+        //         }
+                   
+        //         else
+        //         {
+        //             boneTransform.rotation = worldRotation;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         boneTransform.rotation = this.transform.rotation * worldRotation * offsets[bone];
+        //     }
+        // }
 
         #endregion
 

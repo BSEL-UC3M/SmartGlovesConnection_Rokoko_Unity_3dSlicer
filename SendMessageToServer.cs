@@ -33,52 +33,6 @@ public class SendMessageToServer : MonoBehaviour
         string fileName;
         
         fileName = "D" + modelDiameter + "L" + modelLength + ".obj"; 
-        int size = 20;
-        string[] RightHandTree = new string[size];
-        RightHandTree[0] = "RightHand";
-        RightHandTree[1] = "RightFinger1Metacarpal";
-        RightHandTree[2] = "RightFinger1Proximal";
-        RightHandTree[3] = "RightFinger1Distal";
-        RightHandTree[4] = "RightFinger2Metacarpal";
-        RightHandTree[5] = "RightFinger2Proximal";
-        RightHandTree[6] = "RightFinger2Medial";
-        RightHandTree[7] = "RightFinger2Distal";
-        RightHandTree[8] = "RightFinger3Metacarpal";
-        RightHandTree[9] = "RightFinger3Proximal";
-        RightHandTree[10] = "RightFinger3Medial";
-        RightHandTree[11] = "RightFinger3Distal";
-        RightHandTree[12] = "RightFinger4Metacarpal";
-        RightHandTree[13] = "RightFinger4Proximal";
-        RightHandTree[14] = "RightFinger4Medial";
-        RightHandTree[15] = "RightFinger4Distal";
-        RightHandTree[16] = "RightFinger5Metacarpal";
-        RightHandTree[17] = "RightFinger5Proximal";
-        RightHandTree[18] = "RightFinger5Medial";
-        RightHandTree[19] = "RightFinger5Distal";
-
-        string[] LeftHandTree = new string[size];
-        LeftHandTree[0] = "LeftHand";
-        LeftHandTree[1] = "LeftFinger1Metacarpal";
-        LeftHandTree[2] = "LeftFinger1Proximal";
-        LeftHandTree[3] = "LeftFinger1Distal";
-        LeftHandTree[4] = "LeftFinger2Metacarpal";
-        LeftHandTree[5] = "LeftFinger2Proximal";
-        LeftHandTree[6] = "LeftFinger2Medial";
-        LeftHandTree[7] = "LeftFinger2Distal";
-        LeftHandTree[8] = "LeftFinger3Metacarpal";
-        LeftHandTree[9] = "LeftFinger3Proximal";
-        LeftHandTree[10] = "LeftFinger3Medial";
-        LeftHandTree[11] = "LeftFinger3Distal";
-        LeftHandTree[12] = "LeftFinger4Metacarpal";
-        LeftHandTree[13] = "LeftFinger4Proximal";
-        LeftHandTree[14] = "LeftFinger4Medial";
-        LeftHandTree[15] = "LeftFinger4Distal";
-        LeftHandTree[16] = "LeftFinger5Metacarpal";
-        LeftHandTree[17] = "LeftFinger5Proximal";
-        LeftHandTree[18] = "LeftFinger5Medial";
-        LeftHandTree[19] = "LeftFinger5Distal";
-
-        
         
 
         /////// HEADER INFORMATION:
@@ -142,48 +96,21 @@ public class SendMessageToServer : MonoBehaviour
         // angle = Mathf.Rad2Deg * Mathf.Asin(sinA);
         // Debug.Log("Joint angle: " + angle);
 
-
-        Matrix4x4 matrix = Matrix4x4.identity;
-        bool islefthand = false;
-
-        for (int i = 0; i < size; i++)
-            {
-                
-                if (LeftHandTree[i] == modelName)
-                {
-                    // islefthand = true;
-                    Debug.Log("left_hand");
-                    // Get rotation of myOBJ and add a minus (-) sign to x axis to convert from Unity to Slicer coordinate system
-                    var myOBJRotation = modelGO.transform.localRotation.eulerAngles;
-                    var adaptedRotationFromDeviceToSlicer = new Vector3(myOBJRotation.x, -myOBJRotation.y, myOBJRotation.z);
-                    var rotationForSlicer = Quaternion.Euler(adaptedRotationFromDeviceToSlicer);
-                    Debug.Log(rotationForSlicer);
-                    // Obtain a 4x4 matrix with all the pose information of myOBJ, including the minus (-) sign in the x axis of rotation
-                    matrix = Matrix4x4.TRS(modelGO.transform.localPosition, rotationForSlicer, modelGO.transform.localScale);
-
-                }
-                else{
-                    // Get rotation of myOBJ and add a minus (-) sign to x axis to convert from Unity to Slicer coordinate system
-                    var myOBJRotation = modelGO.transform.localRotation.eulerAngles;
-                    var adaptedRotationFromDeviceToSlicer = new Vector3(-myOBJRotation.x, myOBJRotation.y, -myOBJRotation.z);
-                    var rotationForSlicer = Quaternion.Euler(adaptedRotationFromDeviceToSlicer);
-                    Debug.Log(rotationForSlicer);
-                    // Obtain a 4x4 matrix with all the pose information of myOBJ, including the minus (-) sign in the x axis of rotation
-                    matrix = Matrix4x4.TRS(modelGO.transform.localPosition, rotationForSlicer, modelGO.transform.localScale);
-
-
-
-                }
-            }
-
-        // var myOBJRotation = modelGO.transform.localRotation.eulerAngles;
-        // var adaptedRotationFromDeviceToSlicer = new Vector3(myOBJRotation.x, myOBJRotation.y, -myOBJRotation.z);
-        // var rotationForSlicer = Quaternion.Euler(adaptedRotationFromDeviceToSlicer);
-
-        // // Obtain a 4x4 matrix with all the pose information of myOBJ, including the minus (-) sign in the x axis of rotation
-        // Matrix4x4 matrix = Matrix4x4.TRS(modelGO.transform.localPosition, rotationForSlicer, modelGO.transform.localScale);
-
         
+
+       // Get rotation of myOBJ and add a minus (-) sign to x axis to convert from Unity to Slicer coordinate system
+        var myOBJRotation = modelGO.transform.localRotation.eulerAngles;
+        var adaptedRotationFromDeviceToSlicer = new Vector3(-myOBJRotation.x, myOBJRotation.y, -myOBJRotation.z);
+        var rotationForSlicer = Quaternion.Euler(adaptedRotationFromDeviceToSlicer);
+
+        Debug.Log("localposition");
+        Vector3 myVector = new Vector3(0.00f, 0.00f, 0.00f); 
+        Debug.Log(myVector);
+
+        // Obtain a 4x4 matrix with all the pose information of myOBJ, including the minus (-) sign in the x axis of rotation
+        Matrix4x4 matrix = Matrix4x4.TRS(myVector, rotationForSlicer, modelGO.transform.localScale);
+
+
         float m00 = matrix.GetRow(0)[0];
         byte[] m00Bytes = BitConverter.GetBytes(m00);
         float m01 = matrix.GetRow(0)[1];
@@ -202,7 +129,6 @@ public class SendMessageToServer : MonoBehaviour
         float m13 = -matrix.GetRow(1)[3];                   // (-) because of Unity coordinate system
         byte[] m13Bytes = BitConverter.GetBytes(m13 * scaleMultiplier);
 
-        
         float m20 = matrix.GetRow(2)[0];
         byte[] m20Bytes = BitConverter.GetBytes(m20);
         float m21 = matrix.GetRow(2)[1];
@@ -212,9 +138,9 @@ public class SendMessageToServer : MonoBehaviour
         float m23 = matrix.GetRow(2)[3];
         byte[] m23Bytes = BitConverter.GetBytes(m23 * scaleMultiplier);
 
-        
-      
- 
+
+         
+
         // If little endian, reverse the bytes
         if (BitConverter.IsLittleEndian)
         {
@@ -249,22 +175,6 @@ public class SendMessageToServer : MonoBehaviour
         // Create string with all the matrix elements
         string body = m00Hex + m10Hex + m20Hex + m01Hex + m11Hex + m21Hex + m02Hex + m12Hex + m22Hex + m03Hex + m13Hex + m23Hex;
       
-          // byte[] m13Bytes = Enumerable.Repeat((byte)0, 13).ToArray();
-        // if(islefthand){
-        //     float m13 = matrix.GetRow(1)[3];                   // (-) because of Unity coordinate system
-        //     m13Bytes = BitConverter.GetBytes(m13 * scaleMultiplier);
-
-
-        // }else{
-        //     float m13 = -matrix.GetRow(1)[3];                   // (-) because of Unity coordinate system
-        //     m13Bytes = BitConverter.GetBytes(m13 * scaleMultiplier);
-
-
-        // }
-
-
-
-
         /////// EXTENDED HEADER INFORMATION:
         // EXT_HEADER_SIZE: UInt16. Size of the Extended Header: Always 12 in OpenIGTLink communications
         // METADATA_HEADER_SIZE: UInt16 that represents the length of your Metadata 
