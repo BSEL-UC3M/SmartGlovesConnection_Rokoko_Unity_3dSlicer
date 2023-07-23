@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import unittest
 import logging
 import vtk, qt, ctk, slicer
@@ -145,8 +146,6 @@ class ARUCO_TRACKINGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # LOAD SCENE 
     self.DeliveryTrainingSpontaneousSetupPath_scene = slicer.modules.deliverytrainingspontaneoussetup.path.replace("DeliveryTrainingSpontaneousSetup.py","") + 'Resources/Data/aruco_tracking/'
-    
-
     try:
         #slicer.util.loadScene(self.DeliveryTrainingSpontaneousSetupPath_scene + '2_HAND_GOOD_WITH_METACARPAL.mrml')
         #scene_file = self.DeliveryTrainingSpontaneousSetupPath_scene + 'rokoko_hands_3_fingers.mrml'
@@ -157,33 +156,198 @@ class ARUCO_TRACKINGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     except:
         print('Failed to load the scene file')
 
-    rhand_posterior = slicer.util.getNode("Marker8ToTracker")
+    mother_reference = slicer.util.getNode("Marker2ToTracker")
+    mother_model = slicer.util.getNode("MotherModel")
+    mother_model.SetAndObserveTransformNodeID(mother_reference.GetID())
+    
+
+    
+    
+    
+    rhand_posterior = slicer.util.getNode("Marker4ToTracker")
     rhand_anterior = slicer.util.getNode("Marker6ToTracker")
-    lhand_posterior = slicer.util.getNode("Marker7ToTracker")
+    lhand_posterior = slicer.util.getNode("Marker3ToTracker")
     lhand_anterior = slicer.util.getNode("Marker5ToTracker")
     RightHand_T = slicer.util.getNode("RightHand_T")
     LeftHand_T = slicer.util.getNode("LeftHand_T")
-
-
+    axis_change_multiplication = slicer.util.getNode("axis_change_multiplication")
     
+    registro_izquierdo = slicer.util.getNode("registro_izquierdo")
+    registro_derecho = slicer.util.getNode("registro derecho")
     
+    matrix_registro = registro_derecho.GetMatrixTransformToParent()
+   
+    matrix_registro_derecho = np.zeros((4,4))
+    matrix_registro_derecho[0,3] = matrix_registro.GetElement(0, 3)
+    matrix_registro_derecho[1,3] = matrix_registro.GetElement(1, 3)
+    matrix_registro_derecho[2,3] = matrix_registro.GetElement(2, 3)
+    matrix_registro_derecho[0,2] = matrix_registro.GetElement(0, 2)
+    matrix_registro_derecho[1,2] = matrix_registro.GetElement(1, 2)
+    matrix_registro_derecho[2,2] = matrix_registro.GetElement(2, 2)
+    matrix_registro_derecho[0,1] = matrix_registro.GetElement(0, 1)
+    matrix_registro_derecho[1,1] = matrix_registro.GetElement(1, 1)
+    matrix_registro_derecho[2,1] = matrix_registro.GetElement(2, 1)
+    matrix_registro_derecho[0,0] = matrix_registro.GetElement(0, 0)
+    matrix_registro_derecho[1,0] = matrix_registro.GetElement(1, 0)
+    matrix_registro_derecho[2,0] = matrix_registro.GetElement(2, 0)
+    
+    matrix_registro_izquierdo = registro_izquierdo.GetMatrixTransformToParent()
+   
+    matrix_registro_izq = np.zeros((4,4))
+    matrix_registro_izq[0,3] = matrix_registro_izquierdo.GetElement(0, 3)
+    matrix_registro_izq[1,3] = matrix_registro_izquierdo.GetElement(1, 3)
+    matrix_registro_izq[2,3] = matrix_registro_izquierdo.GetElement(2, 3)
+    matrix_registro_izq[0,2] = matrix_registro_izquierdo.GetElement(0, 2)
+    matrix_registro_izq[1,2] = matrix_registro_izquierdo.GetElement(1, 2)
+    matrix_registro_izq[2,2] = matrix_registro_izquierdo.GetElement(2, 2)
+    matrix_registro_izq[0,1] = matrix_registro_izquierdo.GetElement(0, 1)
+    matrix_registro_izq[1,1] = matrix_registro_izquierdo.GetElement(1, 1)
+    matrix_registro_izq[2,1] = matrix_registro_izquierdo.GetElement(2, 1)
+    matrix_registro_izq[0,0] = matrix_registro_izquierdo.GetElement(0, 0)
+    matrix_registro_izq[1,0] = matrix_registro_izquierdo.GetElement(1, 0)
+    matrix_registro_izq[2,0] = matrix_registro_izquierdo.GetElement(2, 0)
+    # self.calibrationFile = 
+    #Metodos de la clase detectora de los marcadores Aruco
+    def CalibrationParams(self):
+        """
+        Funcion que permite obtener los parametros caracteristicos de la camara tras
+        su correspondiente calibracion mediante el uso de un tablero de ajedrez.
+        :return: Matriz y parametros de distrorsion de la camara
+        """
+        try:
+            with open(str(self.calibrationFile)+"/data/ParametrosCalibracion.yml", "r", encoding="utf8") as infile:
+                InformacionCamara = yaml.full_load(infile)
+            # Camera matrix
+            mtx = np.zeros(shape=(3, 3))
+            for i in range(3):
+                mtx[i] = InformacionCamara[0]["MatrizCamara"][i]
+            # Distorsion parameters of the camera
+            dist = np.array([InformacionCamara[1]["Distorsion"][0]])
+            return mtx, dist
+        except:
+            print("ERROR. No se han podido obtener los parametros de la camara")
+            mtx = np.zeros(shape=(3, 3))
+            dist=[0,0,0,0,0]
+            return mtx,dist
 
-
+    # Back and foreward 
     def right_hand_posterior(caller, eventId):
+        # Convert to millimeters (scale the translation components by 10)
+        matrix = rhand_posterior.GetMatrixTransformToParent()
         
-        RightHand_T.SetAndObserveTransformNodeID(rhand_posterior.GetID())
+        matrix_rhand_posterior = np.zeros((4,4))
+        matrix_rhand_posterior[0,3] = matrix.GetElement(0, 3)
+        matrix_rhand_posterior[1,3] = matrix.GetElement(1, 3)
+        matrix_rhand_posterior[2,3] = matrix.GetElement(2, 3)
+        matrix_rhand_posterior[0,2] = matrix.GetElement(0, 2)
+        matrix_rhand_posterior[1,2] = matrix.GetElement(1, 2)
+        matrix_rhand_posterior[2,2] = matrix.GetElement(2, 2)
+        matrix_rhand_posterior[0,1] = matrix.GetElement(0, 1)
+        matrix_rhand_posterior[1,1] = matrix.GetElement(1, 1)
+        matrix_rhand_posterior[2,1] = matrix.GetElement(2, 1)
+        matrix_rhand_posterior[0,0] = matrix.GetElement(0, 0)
+        matrix_rhand_posterior[1,0] = matrix.GetElement(1, 0)
+        matrix_rhand_posterior[2,0] = matrix.GetElement(2, 0)
+        
+        
+        
+        relative_rhand_posterior_matrix = np.linalg.inv(matrix_registro_derecho) @ matrix_rhand_posterior
+
+        
+        # rhand_posterior.SetMatrixTransformToParent(matrix)
+        # print(rhand_posterior.GetMatrixTransformToParent())
+        # relative_matrix= vtk.vtkGeneralTransform()
+        
+        # rhand_posterior.GetTransformBetweenNodes(registro_derecho , None, relative_matrix)
+        # print(rhand_posterior)
+        
+        # relative_rhand_posterior_matrix = (np.linalg.inv(registro_derecho.GetMatrixTransformToParent()) @ rhand_posterior.GetMatrixTransformToParent())
+        # print(relative_rhand_posterior_matrix)
+        
+        RightHand_T.SetAndObserveTransformNodeID(relative_rhand_posterior_matrix.GetID())
+        
     
     def right_hand_anterior(caller, eventId):
+        # matrix = rhand_anterior.GetMatrixTransformToParent()
+        # matrix.SetElement(0, 3, matrix.GetElement(0, 3) / 1)
+        # matrix.SetElement(1, 3, matrix.GetElement(1, 3) / 1)
+        # matrix.SetElement(2, 3, matrix.GetElement(2, 3) / 1)
+        matrix_a = rhand_anterior.GetMatrixTransformToParent()
         
-        RightHand_T.SetAndObserveTransformNodeID(rhand_anterior.GetID())
+        matrix_rhand_anterior = np.zeros((4,4))
+        matrix_rhand_anterior[0,3] = matrix_a.GetElement(0, 3)
+        matrix_rhand_anterior[1,3] = matrix_a.GetElement(1, 3)
+        matrix_rhand_anterior[2,3] = matrix_a.GetElement(2, 3)
+        matrix_rhand_anterior[0,2] = matrix_a.GetElement(0, 2)
+        matrix_rhand_anterior[1,2] = matrix_a.GetElement(1, 2)
+        matrix_rhand_anterior[2,2] = matrix_a.GetElement(2, 2)
+        matrix_rhand_anterior[0,1] = matrix_a.GetElement(0, 1)
+        matrix_rhand_anterior[1,1] = matrix_a.GetElement(1, 1)
+        matrix_rhand_anterior[2,1] = matrix_a.GetElement(2, 1)
+        matrix_rhand_anterior[0,0] = matrix_a.GetElement(0, 0)
+        matrix_rhand_anterior[1,0] = matrix_a.GetElement(1, 0)
+        matrix_rhand_anterior[2,0] = matrix_a.GetElement(2, 0)
+        
+        
+        
+        relative_rhand_anterior_matrix = np.linalg.inv(matrix_registro_derecho) @ matrix_rhand_anterior
+        
+        # rhand_anterior.SetMatrixTransformToParent(matrix)
+        RightHand_T.SetAndObserveTransformNodeID(relative_rhand_anterior_matrix.GetID())
     
     def left_hand_posterior(caller, eventId):
+        # matrix = lhand_posterior.GetMatrixTransformToParent()
+        # matrix.SetElement(0, 3, matrix.GetElement(0, 3) / 1)
+        # matrix.SetElement(1, 3, matrix.GetElement(1, 3) / 1)
+        # matrix.SetElement(2, 3, matrix.GetElement(2, 3) / 1)
+        matrix_lp = lhand_posterior.GetMatrixTransformToParent()
         
-        LeftHand_T.SetAndObserveTransformNodeID(lhand_posterior.GetID())
+        matrix_lhand_posterior = np.zeros((4,4))
+        matrix_lhand_posterior[0,3] = matrix_lp.GetElement(0, 3)
+        matrix_lhand_posterior[1,3] = matrix_lp.GetElement(1, 3)
+        matrix_lhand_posterior[2,3] = matrix_lp.GetElement(2, 3)
+        matrix_lhand_posterior[0,2] = matrix_lp.GetElement(0, 2)
+        matrix_lhand_posterior[1,2] = matrix_lp.GetElement(1, 2)
+        matrix_lhand_posterior[2,2] = matrix_lp.GetElement(2, 2)
+        matrix_lhand_posterior[0,1] = matrix_lp.GetElement(0, 1)
+        matrix_lhand_posterior[1,1] = matrix_lp.GetElement(1, 1)
+        matrix_lhand_posterior[2,1] = matrix_lp.GetElement(2, 1)
+        matrix_lhand_posterior[0,0] = matrix_lp.GetElement(0, 0)
+        matrix_lhand_posterior[1,0] = matrix_lp.GetElement(1, 0)
+        matrix_lhand_posterior[2,0] = matrix_lp.GetElement(2, 0)
+        
+        relative_lhand_posterior_matrix = np.linalg.inv(matrix_registro_izq) @ matrix_lhand_posterior
+        
+        # lhand_posterior.SetMatrixTransformToParent(matrix)
+        LeftHand_T.SetAndObserveTransformNodeID(relative_lhand_posterior_matrix.GetID())
+        lhand_posterior.SetAndObserveTransformNodeID(axis_change_multiplication.GetID())
     
     def left_hand_anterior(caller, eventId):
+        # matrix = lhand_anterior.GetMatrixTransformToParent()
+        # matrix.SetElement(0, 3, matrix.GetElement(0, 3) / 1)
+        # matrix.SetElement(1, 3, matrix.GetElement(1, 3) / 1)
+        # matrix.SetElement(2, 3, matrix.GetElement(2, 3) / 1)
+        matrix_la = lhand_anterior.GetMatrixTransformToParent()
         
-        LeftHand_T.SetAndObserveTransformNodeID(lhand_anterior.GetID())
+        matrix_lhand_anterior = np.zeros((4,4))
+        matrix_lhand_anterior[0,3] = matrix_la.GetElement(0, 3)
+        matrix_lhand_anterior[1,3] = matrix_la.GetElement(1, 3)
+        matrix_lhand_anterior[2,3] = matrix_la.GetElement(2, 3)
+        matrix_lhand_anterior[0,2] = matrix_la.GetElement(0, 2)
+        matrix_lhand_anterior[1,2] = matrix_la.GetElement(1, 2)
+        matrix_lhand_anterior[2,2] = matrix_la.GetElement(2, 2)
+        matrix_lhand_anterior[0,1] = matrix_la.GetElement(0, 1)
+        matrix_lhand_anterior[1,1] = matrix_la.GetElement(1, 1)
+        matrix_lhand_anterior[2,1] = matrix_la.GetElement(2, 1)
+        matrix_lhand_anterior[0,0] = matrix_la.GetElement(0, 0)
+        matrix_lhand_anterior[1,0] = matrix_la.GetElement(1, 0)
+        matrix_lhand_anterior[2,0] = matrix_la.GetElement(2, 0)
+        
+        relative_lhand_anterior_matrix = np.linalg.inv(matrix_registro_izq) @ matrix_lhand_anterior
+        
+        # lhand_anterior.SetMatrixTransformToParent(matrix)
+        LeftHand_T.SetAndObserveTransformNodeID(relative_lhand_anterior_matrix.GetID())
+        lhand_anterior.SetAndObserveTransformNodeID(axis_change_multiplication.GetID())
 
     # Add an observer to the node's ModifiedEvent
     rhand_posterior.AddObserver('ModifiedEvent', right_hand_posterior)
@@ -191,6 +355,10 @@ class ARUCO_TRACKINGWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
  
     lhand_posterior.AddObserver('ModifiedEvent', left_hand_posterior)
     lhand_anterior.AddObserver('ModifiedEvent', left_hand_anterior)
+
+    # Change from cm to mm. 
+    
+    # Transform relative to initial position
 
   def cleanup(self):
     """
