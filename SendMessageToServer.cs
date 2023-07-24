@@ -74,43 +74,50 @@ public class SendMessageToServer : MonoBehaviour
         string m23Hex;
 
          
-        // To introduce diferences between joints
-        // float childrenLength;
-        // float parentLength;
-
-        // childrenLength = Vector3.Distance(modelGO.position, parentGO.position);
-        // parentLength = Vector3.Distance(parentGO.position, hand.position);
-
-        // Vector3 upperArmVector = upperArm.position - transform.position;
-        // Vector3 forearmVector = forearm.position - upperArm.position;
-
-        // float angle = Vector3.Angle(upperArmVector, forearmVector);
-
-        // float a = upperArmLength;
-        // float b = forearmLength;
-        // float c = forearmVector.magnitude;
-
-        // float cosA = (b * b + c * c - a * a) / (2 * b * c);
-        // float sinA = Mathf.Sqrt(1 - cosA * cosA);
-
-        // angle = Mathf.Rad2Deg * Mathf.Asin(sinA);
-        // Debug.Log("Joint angle: " + angle);
+       
 
         
+    
 
        // Get rotation of myOBJ and add a minus (-) sign to x axis to convert from Unity to Slicer coordinate system
         var myOBJRotation = modelGO.transform.localRotation.eulerAngles;
         var adaptedRotationFromDeviceToSlicer = new Vector3(-myOBJRotation.x, myOBJRotation.y, -myOBJRotation.z);
         var rotationForSlicer = Quaternion.Euler(adaptedRotationFromDeviceToSlicer);
 
-        Debug.Log("localposition");
+       
+                
+            
+
         Vector3 myVector = new Vector3(0.00f, 0.00f, 0.00f); 
-        Debug.Log(myVector);
-
+      
+        Matrix4x4 matrix  =  Matrix4x4.identity;
         // Obtain a 4x4 matrix with all the pose information of myOBJ, including the minus (-) sign in the x axis of rotation
-        Matrix4x4 matrix = Matrix4x4.TRS(myVector, rotationForSlicer, modelGO.transform.localScale);
+        
+        Vector3 righthandposition = new Vector3(0.00f, 0.00f, 0.00f); 
+        Vector3 lefthandposition = new Vector3(0.00f, 0.00f, 0.00f); 
+        
+        // if(modelName == "RightHand")
+        // {
+        //     righthandposition = modelGO.transform.localPosition;
+        // }
+        // else if( modelName == "LeftHand"){
+        //     lefthandposition = modelGO.transform.localPosition;
+        // }
+        // if (modelName == "RightHand" || modelName == "LeftHand" ) // In order to have traslation of both hands. 
+        // {
+        //     matrix = Matrix4x4.TRS(modelGO.transform.localPosition, rotationForSlicer, modelGO.transform.localScale);
+        // }
+        // else
+        // {
+        matrix = Matrix4x4.TRS(myVector, rotationForSlicer, modelGO.transform.localScale); // For the rest of the fingers the traslation is set with the offset transform  in 3d Slicer. 
+        float dist = Vector3.Distance(righthandposition, modelGO.transform.position);
 
-
+        // Debug.Log("Distance to RightHand from: " +  modelName + "is = " + dist);
+        // Debug.Log("Distance to lefthand from: " +  modelName + "is = " + dist);
+        
+           
+        // }
+       
         float m00 = matrix.GetRow(0)[0];
         byte[] m00Bytes = BitConverter.GetBytes(m00);
         float m01 = matrix.GetRow(0)[1];

@@ -24,11 +24,11 @@ public class OpenIGTLinkConnect : MonoBehaviour
     private SocketHandler socket; // Socket to connect to Slicer
     bool isConnected; // Boolean to check if the socket is connected
     public string ipString="localhost"; // IP address of the computer running Slicer
-    public int port = 18944; // Port of the computer running Slicer
+    public int port = 18945; // Port of the computer running Slicer
 
 
     ///////// GENERAL VARIABLES /////////
-    int scaleMultiplier = 1; // Help variable to transform meters to millimeters and vice versa
+    int scaleMultiplier = 1000; // Help variable to transform meters to millimeters and vice versa
 
 
     ///////// SEND /////////
